@@ -1,0 +1,556 @@
+{
+  "info": {
+    "_postman_id": "f4bdb569-e926-48f2-986f-9de6f2ea4f72",
+    "name": "Saylani Backend APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Updated collection aligned with current backend routes: auth, community, requests, messages, notifications, and users. Use baseUrl for active environment. localBaseUrl is for development and deployedBaseUrl is for Vercel deployment."
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const appEnv = (pm.environment.get('appEnv') || pm.collectionVariables.get('appEnv') || 'development').toLowerCase();",
+          "const localBaseUrl = pm.environment.get('localBaseUrl') || pm.collectionVariables.get('localBaseUrl') || 'http://localhost:3080';",
+          "const deployedBaseUrl = pm.environment.get('deployedBaseUrl') || pm.collectionVariables.get('deployedBaseUrl') || 'https://helplytics-backend.vercel.app';",
+          "const activeBaseUrl = pm.environment.get('baseUrl') || pm.collectionVariables.get('baseUrl');",
+          "const nextBaseUrl = appEnv === 'development' ? localBaseUrl : deployedBaseUrl;",
+          "const isCustomBaseUrl = !!activeBaseUrl && activeBaseUrl !== localBaseUrl && activeBaseUrl !== deployedBaseUrl;",
+          "if (!isCustomBaseUrl) {",
+          "  if (pm.environment.has('baseUrl')) pm.environment.set('baseUrl', nextBaseUrl);",
+          "  else pm.collectionVariables.set('baseUrl', nextBaseUrl);",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "appEnv",
+      "value": "development"
+    },
+    {
+      "key": "localBaseUrl",
+      "value": "http://localhost:3080"
+    },
+    {
+      "key": "deployedBaseUrl",
+      "value": "https://helplytics-backend.vercel.app"
+    },
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3080"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "userEmail",
+      "value": "user1@example.com"
+    },
+    {
+      "key": "userPassword",
+      "value": "User@123"
+    },
+    {
+      "key": "otpEmail",
+      "value": "user1@example.com"
+    },
+    {
+      "key": "otpValue",
+      "value": "123456"
+    },
+    {
+      "key": "requestId",
+      "value": ""
+    },
+    {
+      "key": "recipientId",
+      "value": ""
+    },
+    {
+      "key": "notificationId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Welcome - GET /test",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/test",
+              "host": ["{{baseUrl}}"],
+              "path": ["test"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup - POST /api/auth/signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ali User\",\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\",\n  \"confirmPassword\": \"{{userPassword}}\",\n  \"role\": \"Need Help\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "signup"]
+            }
+          }
+        },
+        {
+          "name": "Verify OTP - POST /api/auth/verify-otp",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{otpEmail}}\",\n  \"otp\": \"{{otpValue}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify-otp"]
+            }
+          }
+        },
+        {
+          "name": "Resend OTP - POST /api/auth/resend-otp",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{otpEmail}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/resend-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "resend-otp"]
+            }
+          }
+        },
+        {
+          "name": "Login - POST /api/auth/login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.token) {",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Me - GET /api/auth/me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update Me - PUT /api/auth/me",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ali Updated\",\n  \"role\": \"Both\",\n  \"location\": \"Karachi\",\n  \"skills\": [\"Node.js\", \"MongoDB\"],\n  \"interests\": [\"Mentoring\", \"Career\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Community",
+      "item": [
+        {
+          "name": "Bootstrap - GET /api/community/bootstrap",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/community/bootstrap",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "community", "bootstrap"]
+            }
+          }
+        },
+        {
+          "name": "Dashboard - GET /api/community/dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/community/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "community", "dashboard"]
+            }
+          }
+        },
+        {
+          "name": "Insights - GET /api/community/insights",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/community/insights",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "community", "insights"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Requests",
+      "item": [
+        {
+          "name": "List Requests - GET /api/requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/requests?status=Open&urgency=Medium",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "requests"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "Open"
+                },
+                {
+                  "key": "urgency",
+                  "value": "Medium"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Request - POST /api/requests",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Need career guidance for backend roadmap\",\n  \"description\": \"I want help to plan Node.js + system design learning path.\",\n  \"tags\": [\"career\", \"nodejs\"],\n  \"category\": \"Career\",\n  \"urgency\": \"Medium\",\n  \"location\": \"Karachi\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/requests",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "requests"]
+            }
+          }
+        },
+        {
+          "name": "Get Request By ID - GET /api/requests/:id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/requests/{{requestId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "requests", "{{requestId}}"]
+            }
+          }
+        },
+        {
+          "name": "Volunteer For Request - POST /api/requests/:id/helpers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/requests/{{requestId}}/helpers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "requests", "{{requestId}}", "helpers"]
+            }
+          }
+        },
+        {
+          "name": "Update Request Status - PATCH /api/requests/:id/status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Solved\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/requests/{{requestId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "requests", "{{requestId}}", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "List Messages - GET /api/messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "messages"]
+            }
+          }
+        },
+        {
+          "name": "Send Message - POST /api/messages",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipientId\": \"{{recipientId}}\",\n  \"text\": \"Assalam o Alaikum, I can help you with this request.\",\n  \"requestId\": \"{{requestId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "messages"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List Notifications - GET /api/notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification Read - PATCH /api/notifications/:id/read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/{{notificationId}}/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "{{notificationId}}", "read"]
+            }
+          }
+        },
+        {
+          "name": "Mark All Notifications Read - PATCH /api/notifications/read-all",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/read-all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "read-all"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List Users - GET /api/users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Leaderboard - GET /api/users/leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/leaderboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "leaderboard"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
